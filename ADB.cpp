@@ -1,37 +1,52 @@
 #include <Arduino.h>
 #include "ADB.h"
 
-ADB::ADB(int adb_pin, int power_pin)
+ADB::ADB(byte handler, byte address, bool srq_enable) : r3(0x4000)
 {
-	this->adb_pin = adb_pin;
-	this->power_pin = power_pin;
+	this->setDeviceHandler(handler);
+	this->setDeviceAddress(address);
+	this->setSRQEnable(srq_enable);
+	
+	this->initR3 = this->r3;
+	
+	Serial.println(HEX, this->r3);
 }
 
-ADB::~ADB()
+ADB::~ADB() { };
+	
+byte ADB::getDeviceHandler()
 {
-
+	return this->r3 & 0xFF;
 }
 
-void ADB::init()
+void ADB::setDeviceHandler(byte handler)
 {
-	pinMode(this->adb_pin, INPUT);
-	if (this->powerpin_valid()) {
-		pinMode(this->powerpin_valid(), INPUT);
-	}
+	this->r3 &= 0xFF00;
+	this->r3 |= handler;
 }
 
-void ADB::poweron()
+byte ADB::getDeviceAddress()
 {
-	if (this->powerpin_valid()) {
-		pinMode(this->power_pin, OUTPUT);
-		digitalWrite(this->power_pin, LOW);
-		delay(500);
-		pinMode(this->power_pin, INPUT);
-	}
+	return (this->r3 >> 8) & 0xF;
+}
+	
+void ADB::setDeviceAddress(byte address)
+{
+	this->r3 &= 0xF0FF;
+	this->r3 |= (address & 0xF) << 8;
 }
 
-bool ADB::powerpin_valid()
+bool ADB::getSRQEnable()
 {
-	return this->power_pin > 0;
+	return this->r3 & 0x2000;
 }
 
+void ADB::setSRQEnable(bool enable)
+{
+	this->r3 |= (0x2000 & (enable << 13));
+}
+
+void ADB::reset()
+{
+	this->r3 = this->initR3;
+}
