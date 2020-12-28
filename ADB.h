@@ -1,44 +1,28 @@
+// SPDX-License-Identifier: GPL-3.0-only
+//
+// Copyright (C) 2020 Gregory Norton <gregory.norton@me.com>
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, version 3.
+// 
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program. If not, see <https://www.gnu.org/licenses/>.
+
 #ifndef USB2ADB_ADB_H
 #define USB2ADB_ADB_H	1
 
 #pragma once
 
-#include <Arduino.h>
+#include "ADBDevice.h"
 
-static const byte ADB_DEFAULT_ADDRESS_DONGLE = 1;
-static const byte ADB_DEFAULT_ADDRESS_KEYBOARD = 2;
-static const byte ADB_DEFAULT_ADDRESS_MOUSE = 3;
-static const byte ADB_DEFAULT_ADDRESS_TABLETS = 4;
-static const byte ADB_DEFAULT_ADDRESS_DATA_DEV = 5;
-static const byte ADB_DEFAULT_ADDRESS_RESERVED = 6;
-static const byte ADB_DEFAULT_ADDRESS_MISC = 7;
-
-class ADB {
-private:
-	unsigned short r3;
-	unsigned short initR3;
-
-protected:
-	ADB(byte handler, byte address, bool srq_enable);
-
-public:
-	virtual ~ADB();
-
-	/*virtual void talk() = 0;
-	virtual void listen() = 0;
-	virtual void flush() = 0;
-	virtual void reset() = 0;*/
-	
-	unsigned short getRegister3() { return this->r3; }
-	
-	byte getDeviceHandler();
-	void setDeviceHandler(byte handler);
-	byte getDeviceAddress();
-	void setDeviceAddress(byte address);
-	bool getSRQEnable();
-	void setSRQEnable(bool enable);
-	
-	virtual void reset();
-};
+void adb_init(uint8_t adb_in_pin, uint8_t adb_out_pin, volatile ADBDevice **devs);
+ADBDevice *adb_get_device(uint8_t address);
+void adb_handler();
 
 #endif /* USB2ADB_ADB_H */
